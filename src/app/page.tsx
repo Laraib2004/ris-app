@@ -1,28 +1,64 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import NoteForm from "./components/NoteForm";
 import NotesList from "./components/NotesList";
 import { fetchNotes } from "../lib/api";
-import { useState, useEffect } from "react";
 import { Note } from "../types/Note";
 
 export default function Home() {
 	const [notes, setNotes] = useState<Note[]>([]);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [error, setError] = useState<string | null>(null);
 
 	const loadNotes = async () => {
-		const data = await fetchNotes();
-		setNotes(data);
+		setIsLoading(true);
+		setError(null);
+		try {
+			const data = await fetchNotes();
+			setNotes(data);
+		} catch (err) {
+			console.error("Failed to fetch notes", err);
+			setError("Could not load notes. Please try again.");
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	useEffect(() => {
 		loadNotes();
 	}, []);
 
+	const handleNoteCreated = () => {
+		loadNotes();
+		alert("Note created successfully!");
+	};
+
+	const handleNoteDeleted = () => {
+		loadNotes();
+		alert("Note deleted successfully!");
+	};
+
 	return (
-		<main>
-			<h1>Notes App</h1>
-			<NoteForm onCreated={loadNotes} />
-			<NotesList notes={notes} onDeleted={loadNotes} />
-		</main>
+		<div className="main-container" style={{ maxWidth: 600, margin: "0 auto", padding: "1rem" }}>
+			<h1>My Notes App</h1>
+
+			<section className="form-section" style={{ marginBottom: "2rem" }}>
+				<h2>Create a New Note</h2>
+				<NoteForm onCreated={handleNoteCreated} />
+			</section>
+
+			<section className="list-section">
+				<h2>Your Notes</h2>
+
+				{isLoading && <p>Loading notes...</p>}
+				{error && <p style={{ color: "red" }}>{error}</p>}
+				{!isLoading && !error && notes.length === 0 && <p>No notes yet.</p>}
+
+				{!isLoading && !error && notes.length > 0 && (
+					<NotesList notes={notes} onDeleted={handleNoteDeleted} />
+				)}
+			</section>
+		</div>
 	);
 }
