@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Note } from "../../types/Note";
+import { deleteNote } from "@/lib/api";
 
 type NotesListProps = {
 	notes: Note[];
@@ -13,10 +14,8 @@ export default function NotesList({ notes, onDeleted }: NotesListProps) {
 
 	const handleDelete = async (id: number) => {
 		setDeletingId(id);
-		console.log("Deleting note with ID:", id);
 
-		// Simulated API delay
-		await new Promise((resolve) => setTimeout(resolve, 500));
+		await deleteNote(id);
 
 		setDeletingId(null);
 		onDeleted();

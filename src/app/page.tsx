@@ -31,7 +31,6 @@ export default function Home() {
 
 	const handleNoteCreated = () => {
 		loadNotes();
-		alert("Note created successfully!");
 	};
 
 	const handleNoteDeleted = () => {
