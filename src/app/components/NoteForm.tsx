@@ -1,21 +1,35 @@
 "use client";
 
-import { useState, FormEvent } from "react";
-import { createNote } from "../../lib/api";
+import { useState, FormEvent, useEffect } from "react";
+import { createNote, updateNote } from "../../lib/api";
+import { Note } from "@/types/Note";
 
 type NoteFormProps = {
 	onCreated: () => void;
+	noteToEdit?: Note;
+	clearEdit?: () => void;
 };
 
-export default function NoteForm({ onCreated }: NoteFormProps) {
+export default function NoteForm({ onCreated, noteToEdit, clearEdit }: NoteFormProps) {
 	const [title, setTitle] = useState("");
 	const [content, setContent] = useState("");
+	const id = -1;
+
+	useEffect(() => {
+		if (noteToEdit) {
+			setTitle(noteToEdit.title);
+			setContent(noteToEdit.content);
+		}
+	}, [noteToEdit]);
 
 	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-
-		console.log("Creating note:", { title, content });
-		await createNote({title, content});
+		if (noteToEdit) {
+			await updateNote({ id: noteToEdit.id, title, content });
+			clearEdit?.();
+		} else {
+			await createNote({ id, title, content });
+		}
 		// Reset form and trigger parent refresh
 		setTitle("");
 		setContent("");
@@ -37,7 +51,14 @@ export default function NoteForm({ onCreated }: NoteFormProps) {
 				placeholder="Content"
 				required
 			/>
-			<button type="submit">Add Note</button>
+			<button type="submit">
+				{noteToEdit ? "Update Note" : "Add Note"}
+			</button>
+			{noteToEdit && (
+				<button type="button" className="delete" onClick={clearEdit}>
+					Cancel Edit
+				</button>
+			)}
 		</form>
 	);
 }

@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import { Note } from "../../types/Note";
-import { deleteNote } from "@/lib/api";
+import { deleteNote, updateNote } from "@/lib/api";
 
 type NotesListProps = {
 	notes: Note[];
 	onDeleted: () => void;
+	onUpdated: (note: Note) => void;
 };
 
-export default function NotesList({ notes, onDeleted }: NotesListProps) {
+export default function NotesList({ notes, onDeleted, onUpdated }: NotesListProps) {
 	const [deletingId, setDeletingId] = useState<number | null>(null);
+	const [updateId, setUpdatingId] = useState<number | null>(null);
 
 	const handleDelete = async (id: number) => {
 		setDeletingId(id);
@@ -21,6 +23,12 @@ export default function NotesList({ notes, onDeleted }: NotesListProps) {
 		onDeleted();
 	};
 
+	const handleUpdate = async (note: Note) => {
+		setUpdatingId(note.id);
+		const response = await updateNote(note);
+		setUpdatingId(null);
+		onUpdated(note);
+	}
 	return (
 		<ul style={{ listStyle: "none", padding: 0 }}>
 			{notes.map((note) => (
@@ -29,6 +37,12 @@ export default function NotesList({ notes, onDeleted }: NotesListProps) {
 				>
 					<h3 style={{ margin: "0 0 0.5rem" }}>{note.title}</h3>
 					<p style={{ margin: "0 0 1rem" }}>{note.content}</p>
+					<button className="update"
+						onClick={() => handleUpdate(note)}
+						disabled={updateId === note.id}
+					>
+						{updateId === note.id ? "Updating..." : "Update"}
+					</button>
 					<button className="delete"
 						onClick={() => handleDelete(note.id)}
 						disabled={deletingId === note.id}

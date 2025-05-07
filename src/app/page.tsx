@@ -10,6 +10,7 @@ export default function Home() {
 	const [notes, setNotes] = useState<Note[]>([]);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
+	const [noteToEdit, setNoteToEdit] = useState<Note | null>(null);
 
 	const loadNotes = async () => {
 		setIsLoading(true);
@@ -31,6 +32,7 @@ export default function Home() {
 
 	const handleNoteCreated = () => {
 		loadNotes();
+		setNoteToEdit(null);
 	};
 
 	const handleNoteDeleted = () => {
@@ -38,13 +40,22 @@ export default function Home() {
 		alert("Note deleted successfully!");
 	};
 
+	const handleNoteUpdated = (note: Note) => {
+		setNoteToEdit(note);
+	};
+
+	const handleCancelEdit = () => {
+		setNoteToEdit(null);
+	};
+
 	return (
 		<div className="main-container" style={{ maxWidth: 600, margin: "0 auto", padding: "1rem" }}>
 			<h1>My Notes App</h1>
 
 			<section className="form-section" style={{ marginBottom: "2rem" }}>
-				<h2>Create a New Note</h2>
-				<NoteForm onCreated={handleNoteCreated} />
+				<h2>{noteToEdit ? "Edit Note" : "Create a New Note"}</h2>
+				<NoteForm onCreated={handleNoteCreated} noteToEdit={noteToEdit ?? undefined}
+					clearEdit={handleCancelEdit} />
 			</section>
 
 			<section className="list-section">
@@ -55,7 +66,7 @@ export default function Home() {
 				{!isLoading && !error && notes.length === 0 && <p>No notes yet.</p>}
 
 				{!isLoading && !error && notes.length > 0 && (
-					<NotesList notes={notes} onDeleted={handleNoteDeleted} />
+					<NotesList notes={notes} onDeleted={handleNoteDeleted} onUpdated={handleNoteUpdated} />
 				)}
 			</section>
 		</div>
